@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>LSD Detection Report — {{ record.animal_id }}</title>
+<style>
+  body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;color:#1c2530;margin:0;padding:0;background:#fff}
+  .header{background:#0d3b2e;color:#fff;padding:28px 36px}
+  .header h1{font-size:22px;margin:0 0 4px}
+  .header .sub{color:rgba(255,255,255,.6);font-size:11px}
+  .badge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;font-size:12px}
+  .badge-positive{background:#fde8e8;color:#d13b3b}
+  .badge-healthy{background:#d4f0e3;color:#1a5c45}
+  .badge-uncertain{background:#fdecd6;color:#e07b2a}
+  .body{padding:28px 36px}
+  h3{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8fa4b3;
+     border-bottom:2px solid #d8e4ec;padding-bottom:6px;margin:24px 0 14px}
+  table{width:100%;border-collapse:collapse}
+  td{padding:6px 0;vertical-align:top;font-size:12.5px}
+  td:first-child{color:#8fa4b3;width:38%}
+  .rec-box{padding:14px 16px;border-radius:8px;margin:14px 0}
+  .rec-positive{background:#fde8e8;border-left:4px solid #d13b3b}
+  .rec-healthy{background:#eef8f3;border-left:4px solid #2d8a63}
+  .rec-uncertain{background:#fdecd6;border-left:4px solid #e07b2a}
+  ul{margin:6px 0 0;padding-left:18px;line-height:2}
+  .bar-bg{background:#d8e4ec;border-radius:20px;height:8px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:20px}
+  img{max-width:100%;border-radius:8px;display:block}
+  .footer{border-top:1px solid #d8e4ec;padding:14px 36px;font-size:10px;color:#8fa4b3;margin-top:24px}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div>
+      <div class="sub">PengwinTech Solutions · Academic Project 2026</div>
+      <h1>Lumpy Skin Disease Detection Report</h1>
+      <div class="sub">Report ID: LSD-RPT-{{ record.id }} &nbsp;·&nbsp; Generated: {{ generated_at }}</div>
+    </div>
+    <div style="text-align:right">
+      <span class="badge badge-{{ record.result | lower }}">{{ record.result | upper }}</span>
+      <div class="sub" style="margin-top:4px">Confidence: {{ (record.confidence * 100) | round(1) }}%</div>
+    </div>
+  </div>
+</div>
+
+<div class="body">
+
+  <h3>Animal Information</h3>
+  <table>
+    <tr><td>Animal ID</td><td><strong>{{ record.animal_id }}</strong></td></tr>
+    <tr><td>Record ID</td><td>#{{ record.id }}</td></tr>
+    <tr><td>Scan Date &amp; Time</td><td>{{ record.created_at }}</td></tr>
+    <tr><td>Image File</td><td style="font-family:monospace;font-size:11px">{{ record.image_name }}</td></tr>
+    <tr><td>Field Notes</td><td>{{ record.notes or '—' }}</td></tr>
+  </table>
+
+  <h3>AI Diagnostic Findings</h3>
+  <table>
+    <tr><td>Detection Result</td><td><span class="badge badge-{{ record.result | lower }}">{{ record.result }}</span></td></tr>
+    <tr><td>Model Confidence</td><td>
+      <strong>{{ (record.confidence * 100) | round(1) }}%</strong>
+      <div class="bar-bg" style="margin-top:4px;width:200px">
+        <div class="bar-fill" style="width:{{ (record.confidence * 100) | round(1) }}%;
+          background:{% if record.result == 'Positive' %}#d13b3b{% elif record.result == 'Healthy' %}#2d8a63{% else %}#e07b2a{% endif %}">
+        </div>
+      </div>
+    </td></tr>
+    <tr><td>Lesions Detected</td><td><strong>{{ record.lesion_count }}</strong></td></tr>
+    <tr><td>Severity Grade</td><td><strong>{{ record.severity }}</strong></td></tr>
+  </table>
+
+  <h3>Annotated Image</h3>
+  <div style="background:#000;border-radius:8px;overflow:hidden;margin-bottom:8px">
+    <img src="annotated_{{ record.image_name }}"
+         onerror="this.src='{{ record.image_name }}'"
+         alt="Annotated detection image"
+         style="max-height:360px;margin:0 auto;object-fit:contain"/>
+  </div>
+
+  <h3>Veterinary Recommendations</h3>
+  <div class="rec-box rec-{{ record.result | lower }}">
+    {% if record.result == 'Positive' %}
+    <strong>⚠️ Immediate Action Required</strong>
+    <ul>
+      <li>Isolate the affected animal from the herd immediately.</li>
+      <li>Contact a licensed veterinarian for clinical confirmation.</li>
+      <li>Report to local animal health authorities.</li>
+      <li>Disinfect shared equipment; restrict farm access.</li>
+      <li>Monitor remaining herd for 14 days.</li>
+    </ul>
+    {% elif record.result == 'Healthy' %}
+    <strong>✅ No Immediate Concern</strong>
+    <ul>
+      <li>No LSD lesions detected in this image.</li>
+      <li>Continue routine herd health monitoring.</li>
+      <li>Ensure vaccination schedules are current.</li>
+      <li>Re-screen if new symptoms develop.</li>
+    </ul>
+    {% else %}
+    <strong>⚠️ Inconclusive — Veterinary Review Advised</strong>
+    <ul>
+      <li>AI confidence below diagnostic threshold.</li>
+      <li>Retake image with better lighting.</li>
+      <li>Schedule a physical veterinary examination.</li>
+      <li>Monitor animal closely for 24–48 hours.</li>
+    </ul>
+    {% endif %}
+  </div>
+
+</div>
+
+<div class="footer">
+  <strong>Disclaimer:</strong> This AI-generated report is for educational and research purposes only.
+  It is not a certified veterinary diagnosis. Always consult a licensed veterinarian.
+  Model: YOLOv8-Custom &nbsp;·&nbsp; Platform: LSDDetect AI · PengwinTech Solutions 2026
+</div>
+
+</body>
+</html>

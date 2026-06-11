@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+      <div class="section-eyebrow">Analytics Overview</div>
+      <h1>Outbreak Dashboard</h1>
+      <p>Real-time herd screening statistics and disease trend monitoring.</p>
+    </div>
+    <a href="{{ url_for('detect') }}" class="btn-primary-custom">
+      <i class="bi bi-camera-fill me-1"></i>New Detection
+    </a>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- Stat Cards Row -->
+  <div class="row g-3 mb-4">
+    {% set cards = [
+      ('bi-images', stats.total, 'Total Scans', 'icon-bg-blue', 'stat-blue'),
+      ('bi-exclamation-triangle-fill', stats.positive, 'Positive Cases', 'icon-bg-red', 'stat-red'),
+      ('bi-check-circle-fill', stats.healthy, 'Healthy Animals', 'icon-bg-green', 'stat-green'),
+      ('bi-question-circle-fill', stats.uncertain, 'Uncertain Results', 'icon-bg-amber', 'stat-amber'),
+    ] %}
+    {% for icon, val, label, bg, col in cards %}
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="stat-icon-wrap {{ bg }}">
+          <i class="bi {{ icon }} {{ col }}"></i>
+        </div>
+        <div class="stat-number {{ col }} counter-animate" data-target="{{ val }}">0</div>
+        <div class="stat-label">{{ label }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Detection Rate Banner -->
+  {% if stats.total > 0 %}
+  <div class="card-shell mb-4" style="background:var(--green-900)">
+    <div class="card-shell-body">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <div style="color:rgba(255,255,255,.6);font-size:.8rem;text-transform:uppercase;letter-spacing:.09em">Overall Detection Rate</div>
+          <div style="font-family:var(--ff-display);font-size:2.5rem;color:#fff;line-height:1.1">
+            {{ stats.detection_rate }}%
+          </div>
+          <div style="color:rgba(255,255,255,.55);font-size:.85rem;margin-top:.3rem">
+            {{ stats.positive }} positive out of {{ stats.total }} total scans
+          </div>
+        </div>
+        <div class="col-md-6 mt-3 mt-md-0">
+          <div style="color:rgba(255,255,255,.5);font-size:.78rem;margin-bottom:.4rem">Positive ratio</div>
+          <div style="background:rgba(255,255,255,.15);border-radius:50px;height:12px;overflow:hidden">
+            <div style="height:100%;border-radius:50px;background:linear-gradient(90deg,#d13b3b,#e87070);
+                        width:{{ stats.detection_rate }}%;transition:width 1s ease"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,.4);font-size:.72rem;margin-top:.3rem">
+            <span>0%</span><span>50%</span><span>100%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Charts Row -->
+  <div class="row g-4 mb-4">
+
+    <!-- Donut Chart -->
+    <div class="col-md-5 col-lg-4">
+      <div class="card-shell h-100">
+        <div class="card-shell-header">
+          <span style="font-weight:700;font-size:.88rem">
+            <i class="bi bi-pie-chart me-2 text-success"></i>Result Distribution
+          </span>
+        </div>
+        <div class="card-shell-body d-flex flex-column align-items-center justify-content-center">
+          {% if stats.total > 0 %}
+          <canvas id="donutChart" style="max-height:220px"></canvas>
+          {% else %}
+          <div class="text-center text-muted py-4">
+            <i class="bi bi-bar-chart" style="font-size:2.5rem;opacity:.3"></i>
+            <p class="mt-2 mb-0" style="font-size:.85rem">No data yet — run your first detection.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- 7-Day Trend Line -->
+    <div class="col-md-7 col-lg-8">
+      <div class="card-shell h-100">
+        <div class="card-shell-header">
+          <span style="font-weight:700;font-size:.88rem">
+            <i class="bi bi-graph-up me-2 text-success"></i>7-Day Detection Trend
+          </span>
+        </div>
+        <div class="card-shell-body">
+          {% if stats.trend %}
+          <canvas id="trendChart" style="max-height:220px"></canvas>
+          {% else %}
+          <div class="text-center text-muted py-4">
+            <i class="bi bi-graph-up" style="font-size:2.5rem;opacity:.3"></i>
+            <p class="mt-2 mb-0" style="font-size:.85rem">Trend data will appear after multiple detections.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Severity Bar + Recent Table -->
+  <div class="row g-4">
+
+    <!-- Severity Chart -->
+    <div class="col-md-5 col-lg-4">
+      <div class="card-shell h-100">
+        <div class="card-shell-header">
+          <span style="font-weight:700;font-size:.88rem">
+            <i class="bi bi-bar-chart-fill me-2 text-success"></i>Severity Breakdown
+          </span>
+        </div>
+        <div class="card-shell-body">
+          {% if stats.severity %}
+          <canvas id="severityChart" style="max-height:220px"></canvas>
+          {% else %}
+          <div class="text-center text-muted py-4">
+            <i class="bi bi-bar-chart" style="font-size:2.5rem;opacity:.3"></i>
+            <p class="mt-2 mb-0" style="font-size:.85rem">No severity data yet.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Records Table -->
+    <div class="col-md-7 col-lg-8">
+      <div class="card-shell h-100">
+        <div class="card-shell-header">
+          <span style="font-weight:700;font-size:.88rem">
+            <i class="bi bi-clock-history me-2 text-success"></i>Recent Detections
+          </span>
+          <a href="{{ url_for('admin') }}" style="font-size:.82rem">View all →</a>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Animal ID</th>
+                <th>Result</th>
+                <th>Confidence</th>
+                <th>Severity</th>
+                <th>Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if recent %}
+                {% for r in recent %}
+                <tr>
+                  <td style="font-family:var(--ff-mono);font-size:.8rem;color:var(--mist)">{{ r.id }}</td>
+                  <td><strong>{{ r.animal_id }}</strong></td>
+                  <td><span class="badge-{{ r.result | lower }}">{{ r.result }}</span></td>
+                  <td>{{ (r.confidence * 100) | round(1) }}%</td>
+                  <td><span class="severity-pill sev-{{ r.severity | lower }}">{{ r.severity }}</span></td>
+                  <td style="font-size:.8rem;color:var(--mist)">{{ r.created_at[:10] }}</td>
+                  <td>
+                    <a href="{{ url_for('result', detection_id=r.id) }}"
+                       style="font-size:.8rem" class="text-success">View →</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="7" class="text-center text-muted py-4" style="font-size:.85rem">
+                    No detections yet. <a href="{{ url_for('detect') }}">Run your first scan →</a>
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const statsData = {{ stats | tojson }};
+  document.addEventListener('DOMContentLoaded', () => initDashboardCharts(statsData));
+</script>
+{% endblock %}

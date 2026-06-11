@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="container">
+    <div class="section-eyebrow">Project Documentation</div>
+    <h1>About This Project</h1>
+    <p>AI-Powered Lumpy Skin Disease Detection — PengwinTech Solutions · February 2026</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4">
+
+    <!-- Left column: main content -->
+    <div class="col-lg-8">
+
+      <!-- Project Objective -->
+      <div class="card-shell mb-4">
+        <div class="card-shell-header">
+          <span style="font-weight:700"><i class="bi bi-bullseye me-2 text-success"></i>Project Objective</span>
+        </div>
+        <div class="card-shell-body">
+          <p>
+            This project develops a <strong>web-based computer vision application</strong> that analyses
+            cattle images and identifies visible signs of <strong>Lumpy Skin Disease (LSD)</strong> using
+            a trained YOLOv8 object detection model. It is built for <em>educational and research
+            purposes only</em> as a final-year Computer Science engineering project.
+          </p>
+          <p class="mb-0">
+            The platform bridges the gap between cutting-edge AI research and real-world livestock
+            healthcare — making early disease screening accessible to farmers and field staff who may
+            not have immediate veterinary support.
+          </p>
+        </div>
+      </div>
+
+      <!-- About LSD -->
+      <div class="card-shell mb-4">
+        <div class="card-shell-header">
+          <span style="font-weight:700"><i class="bi bi-virus me-2" style="color:var(--red-500)"></i>What is Lumpy Skin Disease?</span>
+        </div>
+        <div class="card-shell-body">
+          <p>
+            Lumpy Skin Disease is a <strong>viral disease</strong> caused by the Lumpy Skin Disease Virus
+            (LSDV), a member of the Capripoxvirus genus. It primarily affects cattle and water buffalo,
+            causing characteristic skin nodules (2–5 cm), fever, reduced milk production, and in severe
+            cases, death.
+          </p>
+          <div class="row g-3 mt-1">
+            {% for item in [
+              ('bi-thermometer-high','Fever &amp; lethargy', 'red'),
+              ('bi-circle-fill','Skin nodules (2–5 cm)', 'amber'),
+              ('bi-droplet-half','Reduced milk yield', 'blue'),
+              ('bi-exclamation-triangle','Rapid herd spread', 'red')
+            ] %}
+            <div class="col-6">
+              <div style="background:var(--ivory);border-radius:8px;padding:.85rem 1rem;display:flex;gap:.75rem;align-items:center;font-size:.85rem">
+                <i class="bi {{ item[0] }}" style="color:var(--{{ item[2] }}-500);font-size:1.2rem;flex-shrink:0"></i>
+                <span>{{ item[1] | safe }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- AI & Computer Vision Explanation -->
+      <div class="card-shell mb-4">
+        <div class="card-shell-header">
+          <span style="font-weight:700"><i class="bi bi-cpu me-2 text-success"></i>AI &amp; Computer Vision Approach</span>
+        </div>
+        <div class="card-shell-body">
+          <p>
+            Computer Vision is the field of AI that enables machines to interpret and understand visual
+            information from the real world. In this project, we apply it to <strong>automated cattle
+            health screening</strong> — treating visible LSD nodules as objects to be detected in images.
+          </p>
+          <p>
+            The detection pipeline follows these stages:
+          </p>
+
+          <div class="process-step mt-3">
+            <div class="step-number" style="font-size:.85rem;width:36px;height:36px">1</div>
+            <div>
+              <h6 class="mb-1" style="font-size:.92rem">Image Preprocessing</h6>
+              <p class="text-muted mb-0" style="font-size:.84rem">OpenCV resizes, normalises, and prepares the uploaded image to the model's required 640×640 input resolution.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number" style="font-size:.85rem;width:36px;height:36px">2</div>
+            <div>
+              <h6 class="mb-1" style="font-size:.92rem">Feature Extraction</h6>
+              <p class="text-muted mb-0" style="font-size:.84rem">YOLOv8's CSPDarknet backbone extracts multi-scale feature maps capturing texture, shape, and spatial patterns of lesions.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number" style="font-size:.85rem;width:36px;height:36px">3</div>
+            <div>
+              <h6 class="mb-1" style="font-size:.92rem">Detection &amp; Classification</h6>
+              <p class="text-muted mb-0" style="font-size:.84rem">The detection head produces bounding boxes with class scores. Non-Maximum Suppression filters overlapping predictions.</p>
+            </div>
+          </div>
+          <div class="process-step" style="margin-bottom:0">
+            <div class="step-number" style="font-size:.85rem;width:36px;height:36px">4</div>
+            <div>
+              <h6 class="mb-1" style="font-size:.92rem">Result Generation</h6>
+              <p class="text-muted mb-0" style="font-size:.84rem">Lesion count, maximum confidence score, and severity grade are computed and stored alongside the annotated image.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- YOLOv8 Explanation -->
+      <div class="card-shell mb-4">
+        <div class="card-shell-header">
+          <span style="font-weight:700"><i class="bi bi-lightning-charge me-2" style="color:var(--amber-500)"></i>About YOLOv8</span>
+        </div>
+        <div class="card-shell-body">
+          <p>
+            <strong>YOLOv8</strong> (You Only Look Once, version 8) is a state-of-the-art real-time
+            object detection framework developed by <strong>Ultralytics</strong>. It is currently one of
+            the fastest and most accurate detection architectures available, making it ideal for
+            field-deployed medical screening tools.
+          </p>
+          <div class="row g-3 mt-1">
+            {% for label, val in [
+              ('Architecture','CSPDarknet + PAN-FPN'),
+              ('Input Size','640 × 640 pixels'),
+              ('Framework','PyTorch (Python)'),
+              ('Export Formats','ONNX / TensorRT / CoreML'),
+              ('Inference Speed','~38–120 ms per image'),
+              ('Training Loss','CIoU + BCE + Distribution Focal')
+            ] %}
+            <div class="col-sm-6">
+              <div style="font-size:.83rem;padding:.6rem 0;border-bottom:1px solid var(--cloud)">
+                <span style="color:var(--mist);display:block;font-size:.73rem;text-transform:uppercase;letter-spacing:.07em">{{ label }}</span>
+                <strong>{{ val }}</strong>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="mt-3 p-3" style="background:var(--green-50);border-radius:8px;border:1px solid var(--green-100)">
+            <p class="mb-0" style="font-size:.85rem">
+              <strong>Training Pipeline:</strong> A curated dataset of annotated cattle images (YOLO format) 
+              is used to fine-tune the model using multi-GPU PyTorch training with data augmentation techniques 
+              — random flip, mosaic, colour jitter — for robust performance across diverse environments and 
+              cattle breeds. Veterinary expert feedback is incorporated in iterative refinement cycles.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right column: sidebar -->
+    <div class="col-lg-4">
+
+      <div class="card-shell mb-4">
+        <div class="card-shell-header">
+          <span style="font-weight:700"><i class="bi bi-stack me-2 text-success"></i>Tech Stack</span>
+        </div>
+        <div class="card-shell-body">
+          {% for group, items in [
+            ('Frontend', ['HTML5 / CSS3 / JavaScript', 'Bootstrap 5', 'Chart.js']),
+            ('Backend', ['Python 3.11', 'Flask 3.x', 'Werkzeug']),
+            ('AI / ML', ['YOLOv8 (Ultralytics)', 'PyTorch', 'OpenCV', 'NumPy', 'Pandas']),
+            ('Database', ['SQLite 3', 'Python sqlite3']),
+            ('Deployment', ['Render.com / Localhost', 'ONNX (optional)'])
+          ] %}
+          <div class="mb-3">
+            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mist);margin-bottom:.4rem">{{ group }}</div>
+            {% for item in items %}
+            <div style="font-size:.84rem;padding:.3rem 0;border-bottom:1px solid var(--cloud)">
+              <i class="bi bi-check-circle-fill me-2" style="color:var(--green-500);font-size:.7rem"></i>{{ item }}
+            </div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card-shell mb-4">
+        <div class="card-shell-header">
+          <span style="font-weight:700"><i class="bi bi-people me-2 text-success"></i>Target Users</span>
+        </div>
+        <div class="card-shell-body">
+          {% for icon, role, desc in [
+            ('🧑‍🌾','Farmers','Upload images directly from the field using a smartphone for instant preliminary screening.'),
+            ('🩺','Veterinarians','Review AI-annotated results, add clinical notes, and validate or override predictions.'),
+            ('🗂️','Administrators','Manage all records, monitor outbreak trends, and export data for reporting.')
+          ] %}
+          <div class="d-flex gap-3 align-items-start mb-3 {% if not loop.last %}pb-3{% endif %}" style="{% if not loop.last %}border-bottom:1px solid var(--cloud){% endif %}">
+            <span style="font-size:1.4rem">{{ icon }}</span>
+            <div>
+              <strong style="font-size:.9rem">{{ role }}</strong>
+              <p class="mb-0 text-muted" style="font-size:.82rem">{{ desc }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card-shell" style="background:var(--red-100);border-color:#f5c0c0">
+        <div class="card-shell-body">
+          <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--red-500);margin-bottom:.5rem">
+            ⚠️ Disclaimer
+          </div>
+          <p class="mb-0" style="font-size:.82rem;color:#7a2020">
+            This system is built for <strong>educational and research purposes only</strong>.
+            It is not a certified veterinary diagnostic tool. Always consult a qualified
+            veterinarian before making treatment or quarantine decisions.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

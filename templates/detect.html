@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Detect Disease{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="container">
+    <div class="section-eyebrow">AI Detection Module</div>
+    <h1>Lumpy Skin Disease Screening</h1>
+    <p>Upload a clear cattle photograph — results are generated in seconds.</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4 justify-content-center">
+
+    <!-- Upload Form -->
+    <div class="col-lg-7">
+      <div class="card-shell">
+        <div class="card-shell-header">
+          <span style="font-weight:700"><i class="bi bi-upload me-2 text-success"></i>Upload Image</span>
+          <span style="font-size:.78rem;color:var(--mist)">PNG · JPG · WEBP · BMP · Max 16 MB</span>
+        </div>
+        <div class="card-shell-body">
+
+          <form id="detectionForm" method="POST" enctype="multipart/form-data" action="{{ url_for('detect') }}">
+
+            <!-- Upload Zone -->
+            <div id="uploadZone" class="upload-zone mb-3">
+              <div id="uploadDefault">
+                <div class="upload-zone-icon">📷</div>
+                <h5 style="font-size:1rem;margin-bottom:.4rem">Drop image here or click to browse</h5>
+                <p class="text-muted mb-0" style="font-size:.82rem">
+                  Capture a clear, well-lit photo of the cattle's skin/body
+                </p>
+              </div>
+              <div id="previewBox" class="d-none">
+                <div class="preview-container">
+                  <img id="previewImg" src="" alt="Preview" />
+                </div>
+                <p class="text-muted mt-2 mb-0" style="font-size:.78rem;text-align:center">
+                  Click zone to change image
+                </p>
+              </div>
+              <input type="file" id="imageInput" name="image"
+                     accept="image/png,image/jpeg,image/webp,image/bmp"
+                     class="d-none" />
+            </div>
+
+            <!-- Animal ID -->
+            <div class="mb-3">
+              <label for="animalId" class="form-label" style="font-size:.85rem;font-weight:600">
+                Animal ID <span class="text-muted">(optional — auto-generated if blank)</span>
+              </label>
+              <input type="text" id="animalId" name="animal_id"
+                     class="form-control" placeholder="e.g. COW-001 or Tag #4821"
+                     style="border-color:var(--cloud);font-size:.88rem" />
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-4">
+              <label for="notesField" class="form-label" style="font-size:.85rem;font-weight:600">
+                Field Notes <span class="text-muted">(optional)</span>
+              </label>
+              <textarea id="notesField" name="notes" class="form-control" rows="2"
+                        placeholder="e.g. Age, breed, farm location, observed symptoms…"
+                        style="border-color:var(--cloud);font-size:.88rem;resize:none"></textarea>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="submitBtn" class="btn-primary-custom w-100"
+                    style="justify-content:center;padding:.85rem"
+                    disabled>
+              <i class="bi bi-cpu-fill me-2"></i>Analyse with AI
+            </button>
+
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Tips Sidebar -->
+    <div class="col-lg-4 col-xl-3">
+
+      <div class="card-shell mb-3">
+        <div class="card-shell-header">
+          <span style="font-weight:700;font-size:.88rem">
+            <i class="bi bi-lightbulb me-2" style="color:var(--amber-500)"></i>Photo Tips
+          </span>
+        </div>
+        <div class="card-shell-body">
+          {% for tip in [
+            ('bi-sun','Good lighting — avoid harsh shadows'),
+            ('bi-zoom-in','Close enough to see skin texture'),
+            ('bi-aspect-ratio','Show the cattle\'s flank, neck, or head'),
+            ('bi-camera-video-off','Avoid blurry or low-resolution images'),
+            ('bi-palette','Natural daylight gives best results')
+          ] %}
+          <div class="d-flex gap-2 align-items-start mb-2" style="font-size:.83rem">
+            <i class="bi {{ tip[0] }} mt-1 flex-shrink-0" style="color:var(--green-500)"></i>
+            <span>{{ tip[1] }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card-shell mb-3" style="background:var(--green-50);border-color:var(--green-100)">
+        <div class="card-shell-body">
+          <div class="section-eyebrow mb-1">What the AI looks for</div>
+          <ul style="font-size:.82rem;padding-left:1.2rem;margin:0;line-height:2">
+            <li>Circular skin nodules (2–5 cm)</li>
+            <li>Raised, firm bumps across body</li>
+            <li>Necrotic skin patches</li>
+            <li>Lesion clusters on neck/head</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card-shell" style="background:var(--amber-100);border-color:#f5d9c0">
+        <div class="card-shell-body" style="font-size:.8rem;color:#7a4a00">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          <strong>Reminder:</strong> AI screening is a preliminary tool only.
+          Always consult a licensed veterinarian for diagnosis and treatment.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="d-none"
+     style="position:fixed;inset:0;background:rgba(28,37,48,.75);z-index:9000;
+            display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem">
+  <div class="text-center text-white">
+    <div style="font-size:3.5rem;animation:pulse 1.5s ease-in-out infinite">🔍</div>
+    <h4 class="mt-3 mb-1" style="font-family:var(--ff-display)">Analysing Image…</h4>
+    <p style="opacity:.7;font-size:.88rem">YOLOv8 model is scanning for LSD lesions</p>
+    <div class="mt-3" style="width:200px;height:4px;background:rgba(255,255,255,.2);border-radius:50px;overflow:hidden;margin:0 auto">
+      <div style="height:100%;background:var(--green-300);border-radius:50px;animation:loadBar 2s ease-in-out infinite"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+@keyframes loadBar {
+  0%   { width:0%; margin-left:0 }
+  50%  { width:70%; margin-left:0 }
+  100% { width:0%; margin-left:100% }
+}
+#loadingOverlay:not(.d-none) { display:flex !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+<div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:4rem 1rem">
+  <div class="text-center">
+    <div style="font-size:5rem;margin-bottom:1rem">🐄</div>
+    <h1 style="font-size:5rem;font-family:var(--ff-display);color:var(--cloud);margin-bottom:0">404</h1>
+    <h2 style="font-size:1.4rem;margin-bottom:1rem">Page Not Found</h2>
+    <p class="text-muted" style="max-width:380px;margin:0 auto 2rem">
+      The page you're looking for has wandered off the farm.
+      Head back to safety.
+    </p>
+    <a href="{{ url_for('index') }}" class="btn-primary-custom">
+      <i class="bi bi-house me-2"></i>Back to Home
+    </a>
+  </div>
+</div>
+{% endblock %}

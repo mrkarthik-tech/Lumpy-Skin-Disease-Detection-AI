@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ──────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <div class="hero-badge">🔬 AI-Powered Veterinary Screening</div>
+        <h1 class="display-title mb-3">
+          Detect Lumpy Skin Disease<br>
+          <span style="color:var(--green-300)">Before It Spreads</span>
+        </h1>
+        <p>
+          Upload a cattle image and our YOLOv8 computer vision model analyses it
+          instantly — identifying Lumpy Skin Disease lesions with confidence scores
+          and annotated outputs.
+        </p>
+        <div class="d-flex gap-3 mt-4 flex-wrap">
+          <a href="{{ url_for('detect') }}" class="btn-primary-custom">
+            <i class="bi bi-camera-fill"></i>Start Detection
+          </a>
+          <a href="{{ url_for('about') }}" class="btn-outline-custom"
+             style="border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.85)">
+            <i class="bi bi-play-circle"></i>How It Works
+          </a>
+        </div>
+
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-val counter-animate" data-target="{{ stats.total }}">0</div>
+            <div class="hero-stat-label">Images Analysed</div>
+          </div>
+          <div>
+            <div class="hero-stat-val counter-animate" data-target="{{ stats.positive }}">0</div>
+            <div class="hero-stat-label">Positive Cases</div>
+          </div>
+          <div>
+            <div class="hero-stat-val">{{ stats.detection_rate }}%</div>
+            <div class="hero-stat-label">Detection Rate</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5 offset-lg-1">
+        <div class="hero-visual">
+          <div class="scan-animation">
+            <div class="scan-line"></div>
+            <span class="scan-icon">🐄</span>
+          </div>
+          <div class="detection-chips mt-3">
+            <span class="chip chip-positive"><i class="bi bi-exclamation-triangle me-1"></i>LSD Detected</span>
+            <span class="chip chip-healthy"><i class="bi bi-check-circle me-1"></i>Healthy</span>
+            <span class="chip chip-pending"><i class="bi bi-clock me-1"></i>Analysing…</span>
+          </div>
+          <div class="mt-3" style="color:rgba(255,255,255,.5);font-size:.78rem;">
+            <i class="bi bi-cpu me-1"></i>YOLOv8 model &nbsp;·&nbsp;
+            <i class="bi bi-lightning me-1"></i>Real-time inference &nbsp;·&nbsp;
+            <i class="bi bi-shield-check me-1"></i>Confidence scoring
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features Grid ──────────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="section-eyebrow">Platform Capabilities</div>
+      <h2 style="font-size:2rem">Everything You Need for Cattle Health Screening</h2>
+      <p class="text-muted mt-2" style="max-width:520px;margin:auto">
+        An end-to-end AI pipeline from image capture to structured report — 
+        accessible to farmers, field staff, and veterinarians.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      {% set features = [
+        ('🔍', 'Image-Based Screening', 'Upload any cattle photo — our YOLO model scans for skin lesions and returns a result in seconds with bounding-box annotations.'),
+        ('📊', 'Confidence Scoring', 'Every prediction includes a percentage confidence score so veterinarians can weigh AI output alongside clinical judgement.'),
+        ('📋', 'Detailed Reports', 'Auto-generated reports include animal ID, timestamp, lesion count, severity grade, and annotated image — downloadable as HTML.'),
+        ('📈', 'Outbreak Dashboard', 'Live statistics, 7-day trend charts, severity breakdowns, and geographic distribution — spot patterns before they escalate.'),
+        ('👥', 'Multi-Role Access', 'Role-aware case management for farmers logging cases, vets reviewing results, and admins overseeing all records.'),
+        ('🗄️', 'Persistent History', 'All scans, results, and reports stored in SQLite with full search, filter, and audit capabilities from the admin panel.')
+      ] %}
+      {% for icon, title, desc in features %}
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card">
+          <div class="feature-icon">{{ icon }}</div>
+          <h5 class="mb-2" style="font-size:1.05rem">{{ title }}</h5>
+          <p class="text-muted mb-0" style="font-size:.88rem;line-height:1.65">{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ───────────────────────────────────────────── -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-5">
+        <div class="section-eyebrow">Detection Workflow</div>
+        <h2 style="font-size:1.9rem;margin-bottom:1.5rem">From Photo to Diagnosis in 3 Steps</h2>
+        <div class="process-step">
+          <div class="step-number">1</div>
+          <div>
+            <h6 class="mb-1">Upload Cattle Image</h6>
+            <p class="text-muted mb-0" style="font-size:.88rem">
+              Drag and drop or select any clear photograph of the animal from your phone or camera.
+            </p>
+          </div>
+        </div>
+        <div class="process-step">
+          <div class="step-number">2</div>
+          <div>
+            <h6 class="mb-1">AI Analyses the Image</h6>
+            <p class="text-muted mb-0" style="font-size:.88rem">
+              YOLOv8 scans for characteristic lumpy-skin nodules, drawing bounding boxes around suspected lesions.
+            </p>
+          </div>
+        </div>
+        <div class="process-step" style="margin-bottom:0">
+          <div class="step-number">3</div>
+          <div>
+            <h6 class="mb-1">Review Report &amp; Act</h6>
+            <p class="text-muted mb-0" style="font-size:.88rem">
+              Get annotated output, severity grade, and a downloadable report to share with your veterinarian.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 offset-lg-1">
+        <div class="card-shell">
+          <div class="card-shell-header">
+            <span style="font-weight:700;font-size:.9rem"><i class="bi bi-activity me-2 text-success"></i>Recent Activity</span>
+            <a href="{{ url_for('dashboard') }}" style="font-size:.82rem">View all →</a>
+          </div>
+          <div class="card-shell-body p-0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Animal ID</th>
+                  <th>Result</th>
+                  <th>Confidence</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if stats.trend %}
+                  <tr>
+                    <td colspan="4" class="text-center text-muted py-4" style="font-size:.85rem">
+                      <a href="{{ url_for('detect') }}">Run your first detection →</a>
+                    </td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td colspan="4" class="text-center text-muted py-4" style="font-size:.85rem">
+                      No records yet. <a href="{{ url_for('detect') }}">Upload an image to begin.</a>
+                    </td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA Band ───────────────────────────────────────────────── -->
+<section style="background:var(--green-900);padding:70px 0">
+  <div class="container text-center">
+    <h2 style="color:#fff;font-size:2rem;margin-bottom:1rem">
+      Ready to Screen Your Herd?
+    </h2>
+    <p style="color:rgba(255,255,255,.65);max-width:460px;margin:0 auto 2rem">
+      Upload a cattle image now and receive an AI-powered LSD screening result in seconds.
+    </p>
+    <a href="{{ url_for('detect') }}" class="btn-primary-custom"
+       style="background:var(--green-300);color:var(--green-900);font-size:1rem;padding:.85rem 2rem">
+      <i class="bi bi-camera-fill me-1"></i>Run Detection
+    </a>
+  </div>
+</section>
+
+{% endblock %}

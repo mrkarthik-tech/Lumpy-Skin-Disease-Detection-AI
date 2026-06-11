@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Report #{{ record.id }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+      <div class="section-eyebrow">Detection Report</div>
+      <h1>Report — {{ record.animal_id }}</h1>
+      <p>Generated: {{ generated_at }}</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button id="printReportBtn" class="btn-outline-custom">
+        <i class="bi bi-printer me-1"></i>Print
+      </button>
+      <a href="{{ url_for('download_report', detection_id=record.id) }}"
+         class="btn-primary-custom">
+        <i class="bi bi-download me-1"></i>Download HTML
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- Report Card -->
+  <div class="card-shell" style="max-width:860px;margin:0 auto">
+
+    <!-- Report Header -->
+    <div style="background:var(--green-900);padding:2rem 2.5rem;color:#fff">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <div style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:.4rem">
+            PengwinTech Solutions · Academic Project 2026
+          </div>
+          <h2 style="font-family:var(--ff-display);color:#fff;font-size:1.7rem;margin-bottom:.2rem">
+            Lumpy Skin Disease Detection Report
+          </h2>
+          <div style="color:rgba(255,255,255,.6);font-size:.88rem">
+            Report ID: LSD-RPT-{{ record.id }} &nbsp;·&nbsp; {{ generated_at }}
+          </div>
+        </div>
+        <div style="text-align:right">
+          {% set result_colors = {'Positive': '#d13b3b', 'Healthy': '#2d8a63', 'Uncertain': '#e07b2a'} %}
+          <div style="background:{{ result_colors.get(record.result, '#888') }};
+                      padding:.5rem 1.2rem;border-radius:50px;font-weight:700;
+                      font-size:.9rem;display:inline-block">
+            {{ record.result | upper }}
+          </div>
+          <div style="color:rgba(255,255,255,.5);font-size:.78rem;margin-top:.4rem">
+            AI Confidence: {{ (record.confidence * 100) | round(1) }}%
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:2.5rem">
+
+      <!-- Patient / Animal Information -->
+      <h5 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+                 color:var(--mist);border-bottom:2px solid var(--cloud);padding-bottom:.5rem;margin-bottom:1.2rem">
+        Animal Information
+      </h5>
+      <div class="row g-3 mb-4">
+        {% for label, value in [
+          ('Animal ID', record.animal_id),
+          ('Record ID', '#' ~ record.id),
+          ('Scan Date', record.created_at.split(' ')[0]),
+          ('Scan Time', record.created_at.split(' ')[1] if ' ' in record.created_at else '—'),
+          ('Image File', record.image_name),
+          ('Notes', record.notes or '—')
+        ] %}
+        <div class="col-6">
+          <div style="font-size:.72rem;color:var(--mist);text-transform:uppercase;letter-spacing:.07em">{{ label }}</div>
+          <div style="font-weight:600;font-size:.88rem;word-break:break-all">{{ value }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- AI Findings -->
+      <h5 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+                 color:var(--mist);border-bottom:2px solid var(--cloud);padding-bottom:.5rem;margin-bottom:1.2rem">
+        AI Diagnostic Findings
+      </h5>
+      <div class="row g-3 mb-4">
+        <div class="col-sm-3 text-center">
+          <div style="font-size:.72rem;color:var(--mist);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem">Result</div>
+          <span class="badge-{{ record.result | lower }}" style="font-size:.82rem">{{ record.result }}</span>
+        </div>
+        <div class="col-sm-3 text-center">
+          <div style="font-size:.72rem;color:var(--mist);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem">Confidence</div>
+          <strong style="font-size:1.3rem;color:var(--green-500)">{{ (record.confidence * 100) | round(1) }}%</strong>
+        </div>
+        <div class="col-sm-3 text-center">
+          <div style="font-size:.72rem;color:var(--mist);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem">Lesions Found</div>
+          <strong style="font-size:1.3rem">{{ record.lesion_count }}</strong>
+        </div>
+        <div class="col-sm-3 text-center">
+          <div style="font-size:.72rem;color:var(--mist);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem">Severity</div>
+          <span class="severity-pill sev-{{ record.severity | lower }}">{{ record.severity }}</span>
+        </div>
+      </div>
+
+      <!-- Confidence Bar -->
+      <div class="mb-4">
+        <div class="d-flex justify-content-between mb-1" style="font-size:.8rem">
+          <span style="color:var(--mist)">Model Confidence</span>
+          <strong>{{ (record.confidence * 100) | round(1) }}%</strong>
+        </div>
+        <div class="confidence-bar-wrap">
+          <div class="confidence-bar"
+               data-width="{{ (record.confidence * 100) | round(1) }}"
+               style="width:0%;
+               background:{% if record.result == 'Positive' %}linear-gradient(90deg,var(--red-500),#e87070)
+                          {% elif record.result == 'Healthy' %}linear-gradient(90deg,var(--green-500),var(--green-300))
+                          {% else %}linear-gradient(90deg,var(--amber-500),#f0b060){% endif %}">
+          </div>
+        </div>
+      </div>
+
+      <!-- Annotated Image -->
+      <h5 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+                 color:var(--mist);border-bottom:2px solid var(--cloud);padding-bottom:.5rem;margin-bottom:1.2rem">
+        Annotated Image
+      </h5>
+      <div style="background:#000;border-radius:var(--radius);overflow:hidden;margin-bottom:2rem">
+        {% set ann = 'annotated_' + record.image_name %}
+        <img src="{{ url_for('static', filename='uploads/' + ann) }}"
+             onerror="this.src='{{ url_for('static', filename='uploads/' + record.image_name) }}'"
+             alt="Annotated cattle image"
+             style="width:100%;max-height:420px;object-fit:contain;display:block" />
+      </div>
+
+      <!-- Recommendations -->
+      <h5 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+                 color:var(--mist);border-bottom:2px solid var(--cloud);padding-bottom:.5rem;margin-bottom:1.2rem">
+        Veterinary Recommendations
+      </h5>
+      <div style="background:{% if record.result == 'Positive' %}var(--red-100){% elif record.result == 'Healthy' %}var(--green-50){% else %}var(--amber-100){% endif %};
+                  border-radius:var(--radius);padding:1.2rem 1.5rem;margin-bottom:2rem;
+                  border-left:4px solid {% if record.result == 'Positive' %}var(--red-500){% elif record.result == 'Healthy' %}var(--green-500){% else %}var(--amber-500){% endif %}">
+        {% if record.result == 'Positive' %}
+        <strong>⚠️ Immediate Action Required:</strong>
+        <ul style="margin:.5rem 0 0;padding-left:1.3rem;font-size:.88rem;line-height:2">
+          <li>Isolate the affected animal from the herd immediately.</li>
+          <li>Contact a licensed veterinarian for clinical confirmation.</li>
+          <li>Report to local animal health authorities as required by regulation.</li>
+          <li>Disinfect shared equipment and restrict farm access.</li>
+          <li>Monitor remaining herd for similar symptoms over the next 14 days.</li>
+        </ul>
+        {% elif record.result == 'Healthy' %}
+        <strong>✅ No Immediate Concern:</strong>
+        <ul style="margin:.5rem 0 0;padding-left:1.3rem;font-size:.88rem;line-height:2">
+          <li>No LSD lesions detected in this image.</li>
+          <li>Continue routine herd health monitoring.</li>
+          <li>Ensure vaccination schedules are up to date.</li>
+          <li>Re-screen if any new symptoms develop.</li>
+        </ul>
+        {% else %}
+        <strong>⚠️ Inconclusive Result:</strong>
+        <ul style="margin:.5rem 0 0;padding-left:1.3rem;font-size:.88rem;line-height:2">
+          <li>AI confidence is below threshold for definitive diagnosis.</li>
+          <li>Retake image with better lighting and closer proximity.</li>
+          <li>Consult a veterinarian for physical examination.</li>
+          <li>Monitor animal closely for 24–48 hours.</li>
+        </ul>
+        {% endif %}
+      </div>
+
+      <!-- Disclaimer -->
+      <div style="background:var(--ivory);border:1px solid var(--cloud);border-radius:var(--radius-sm);
+                  padding:1rem 1.2rem;font-size:.78rem;color:var(--mist);line-height:1.6">
+        <strong style="color:var(--slate)">Disclaimer:</strong>
+        This report is generated by an AI model for educational and research purposes only.
+        It does not constitute a certified veterinary diagnosis. Always consult a qualified
+        veterinarian before making treatment, quarantine, or reporting decisions.
+        <br><strong>Model:</strong> YOLOv8-Custom &nbsp;·&nbsp;
+        <strong>Platform:</strong> LSDDetect AI · PengwinTech Solutions 2026
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}Detection Result #{{ record.id }}{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="container">
+    <div class="section-eyebrow">Detection Result</div>
+    <h1>Analysis Report #{{ record.id }}</h1>
+    <p>Animal: <strong>{{ record.animal_id }}</strong> &nbsp;·&nbsp; {{ record.created_at }}</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-4">
+
+    <!-- Left: Images & Result Banner -->
+    <div class="col-lg-7">
+
+      <!-- Result Banner -->
+      {% set result_lower = record.result | lower %}
+      <div class="result-banner {{ result_lower }}">
+        <span style="font-size:2.5rem">
+          {% if record.result == 'Positive' %}🚨
+          {% elif record.result == 'Healthy' %}✅
+          {% else %}⚠️{% endif %}
+        </span>
+        <div>
+          <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.7">
+            Detection Result
+          </div>
+          <div class="result-label">
+            {% if record.result == 'Positive' %}Lumpy Skin Disease Detected
+            {% elif record.result == 'Healthy' %}No Disease Detected — Healthy
+            {% else %}Uncertain — Veterinary Review Advised{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Confidence Score -->
+      <div class="card-shell mb-4">
+        <div class="card-shell-header">
+          <span style="font-weight:700;font-size:.88rem">
+            <i class="bi bi-speedometer2 me-2 text-success"></i>Confidence Score
+          </span>
+          <strong style="font-size:1.2rem;
+            color:{% if record.confidence >= 0.85 %}var(--green-500)
+                  {% elif record.confidence >= 0.65 %}var(--amber-500)
+                  {% else %}var(--red-500){% endif %}">
+            {{ (record.confidence * 100) | round(1) }}%
+          </strong>
+        </div>
+        <div class="card-shell-body pb-3">
+          <div class="confidence-bar-wrap">
+            <div class="confidence-bar"
+                 data-width="{{ (record.confidence * 100) | round(1) }}"
+                 style="width:0%;
+                   background:{% if record.result == 'Positive' %}linear-gradient(90deg,var(--red-500),#e87070)
+                              {% elif record.result == 'Healthy' %}linear-gradient(90deg,var(--green-500),var(--green-300))
+                              {% else %}linear-gradient(90deg,var(--amber-500),#f0b060){% endif %}">
+            </div>
+          </div>
+          <div class="d-flex justify-content-between mt-1" style="font-size:.72rem;color:var(--mist)">
+            <span>0%</span><span>50%</span><span>100%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Annotated Image -->
+      <div class="card-shell">
+        <div class="card-shell-header">
+          <span style="font-weight:700;font-size:.88rem">
+            <i class="bi bi-image me-2 text-success"></i>Annotated Analysis
+          </span>
+          <span style="font-size:.75rem;color:var(--mist)">Lesion boxes drawn by AI</span>
+        </div>
+        <div class="card-shell-body p-2">
+          <div style="background:#000;border-radius:var(--radius);overflow:hidden">
+            {% set ann = 'annotated_' + record.image_name %}
+            <img src="{{ url_for('static', filename='uploads/' + ann) }}"
+                 onerror="this.src='{{ url_for('static', filename='uploads/' + record.image_name) }}'"
+                 alt="Annotated cattle image"
+                 style="width:100%;max-height:480px;object-fit:contain;display:block" />
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: Metadata & Actions -->
+    <div class="col-lg-5">
+
+      <!-- Detection Details -->
+      <div class="card-shell mb-4">
+        <div class="card-shell-header">
+          <span style="font-weight:700;font-size:.88rem">
+            <i class="bi bi-clipboard-data me-2 text-success"></i>Detection Details
+          </span>
+        </div>
+        <div class="card-shell-body">
+          <table class="meta-table w-100">
+            <tr>
+              <td>Record ID</td>
+              <td>#{{ record.id }}</td>
+            </tr>
+            <tr>
+              <td>Animal ID</td>
+              <td><strong>{{ record.animal_id }}</strong></td>
+            </tr>
+            <tr>
+              <td>Date &amp; Time</td>
+              <td>{{ record.created_at }}</td>
+            </tr>
+            <tr>
+              <td>AI Result</td>
+              <td>
+                <span class="badge-{{ result_lower }}">{{ record.result }}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Confidence</td>
+              <td><strong>{{ (record.confidence * 100) | round(1) }}%</strong></td>
+            </tr>
+            <tr>
+              <td>Lesions Found</td>
+              <td>
+                <strong>{{ record.lesion_count }}</strong>
+                {% if record.lesion_count > 0 %} nodule(s) detected{% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td>Severity</td>
+              <td>
+                <span class="severity-pill sev-{{ record.severity | lower }}">
+                  {{ record.severity }}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>Image File</td>
+              <td style="font-family:var(--ff-mono);font-size:.78rem;word-break:break-all">
+                {{ record.image_name }}
+              </td>
+            </tr>
+            {% if record.notes %}
+            <tr>
+              <td>Field Notes</td>
+              <td style="font-size:.84rem">{{ record.notes }}</td>
+            </tr>
+            {% endif %}
+          </table>
+        </div>
+      </div>
+
+      <!-- Severity Guide -->
+      <div class="card-shell mb-4">
+        <div class="card-shell-header">
+          <span style="font-weight:700;font-size:.88rem">
+            <i class="bi bi-bar-chart-steps me-2 text-success"></i>Severity Scale
+          </span>
+        </div>
+        <div class="card-shell-body">
+          {% for sev, cls, desc in [
+            ('None','sev-none','No lesions detected — animal appears healthy.'),
+            ('Mild','sev-mild','1–2 nodules. Monitor closely; consult vet.'),
+            ('Moderate','sev-moderate','3–5 nodules. Isolate animal; veterinary treatment advised.'),
+            ('Severe','sev-severe','6+ nodules. Immediate veterinary intervention required.')
+          ] %}
+          <div class="d-flex gap-3 align-items-start mb-2 pb-2 {% if not loop.last %}border-bottom{% endif %}"
+               style="border-color:var(--cloud)">
+            <span class="severity-pill {{ cls }}" style="flex-shrink:0;margin-top:2px">{{ sev }}</span>
+            <span style="font-size:.82rem;color:var(--slate)">{{ desc }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="card-shell">
+        <div class="card-shell-body">
+          <div class="d-grid gap-2">
+            <a href="{{ url_for('report', detection_id=record.id) }}"
+               class="btn-primary-custom" style="justify-content:center">
+              <i class="bi bi-file-earmark-text me-2"></i>View Full Report
+            </a>
+            <a href="{{ url_for('download_report', detection_id=record.id) }}"
+               class="btn-outline-custom" style="justify-content:center">
+              <i class="bi bi-download me-2"></i>Download Report
+            </a>
+            <a href="{{ url_for('detect') }}"
+               class="btn-outline-custom" style="justify-content:center">
+              <i class="bi bi-camera me-2"></i>New Detection
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
