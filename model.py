@@ -45,7 +45,7 @@ def _demo_prediction(image_path: str) -> dict:
     """
     import random, hashlib
     # Deterministic but varied output based on filename
-    seed = int(hashlib.md5(os.path.basename(image_path).encode()).hexdigest(), 16) % 1000
+    seed = int(hashlib.md5(image_path.encode()).hexdigest(), 16) % 10000
     random.seed(seed)
 
     result_choice = random.choices(
@@ -79,7 +79,7 @@ def _demo_prediction(image_path: str) -> dict:
 def _draw_demo_boxes(image_path: str, result: str, lesion_count: int) -> str:
     """Draw demo bounding boxes and return annotated filename."""
     import random, hashlib
-    seed = int(hashlib.md5(os.path.basename(image_path).encode()).hexdigest(), 16) % 1000
+    seed = int(hashlib.md5(image_path.encode()).hexdigest(), 16) % 10000
     random.seed(seed + 1)
 
     img = cv2.imread(image_path)
